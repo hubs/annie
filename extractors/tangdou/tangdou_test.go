@@ -3,14 +3,11 @@ package tangdou
 import (
 	"testing"
 
-	"github.com/iawia002/annie/config"
-	"github.com/iawia002/annie/downloader"
+	"github.com/iawia002/annie/extractors/types"
 	"github.com/iawia002/annie/test"
 )
 
 func TestTangDou(t *testing.T) {
-	config.InfoOnly = true
-	config.ThreadNumber = 9
 	tests := []struct {
 		name     string
 		args     test.Args
@@ -21,7 +18,6 @@ func TestTangDou(t *testing.T) {
 			args: test.Args{
 				URL:   "http://www.tangdou.com/v95/dAOQNgMjwT2D5w2.html",
 				Title: "杨丽萍广场舞《好日子天天过》喜庆双扇扇子舞",
-				Size:  87611483,
 			},
 		},
 		{
@@ -33,24 +29,7 @@ func TestTangDou(t *testing.T) {
 			},
 		},
 		{
-			name: "share url",
-			args: test.Args{
-				URL:   "https://share.tangdou.com/play.php?vid=1500667821669",
-				Title: "井岗紫薇广场舞18步双人舞《采槟榔》附分解",
-				Size:  26693149,
-			},
-		},
-		{
 			name: "playlist test",
-			args: test.Args{
-				URL:   "http://www.tangdou.com/playlist/view/1882",
-				Title: "青儿广场舞《小朋友们都被接走了》原创32步流行舞",
-				Size:  69448816,
-			},
-			playlist: true,
-		},
-		{
-			name: "playlist test2",
 			args: test.Args{
 				URL:   "http://www.tangdou.com/playlist/view/2816/page/4",
 				Title: "茉莉广场舞 我向草原问个好 原创藏族风民族舞附教学",
@@ -62,17 +41,18 @@ func TestTangDou(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var (
-				data []downloader.Data
+				data []*types.Data
 				err  error
 			)
 			if tt.playlist {
 				// playlist mode
-				config.Playlist = true
-				_, err = Extract(tt.args.URL)
+				_, err = New().Extract(tt.args.URL, types.Options{
+					Playlist:     true,
+					ThreadNumber: 9,
+				})
 				test.CheckError(t, err)
 			} else {
-				config.Playlist = false
-				data, err = Extract(tt.args.URL)
+				data, err = New().Extract(tt.args.URL, types.Options{})
 				test.CheckError(t, err)
 				test.Check(t, tt.args, data[0])
 			}

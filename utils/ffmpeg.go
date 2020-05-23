@@ -1,45 +1,39 @@
 package utils
 
+
 import (
 	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 
-
-// MergeAudioAndVideo merge audio and video
-func MergeAudioAndVideo(paths []string, mergedFilePath string) error {
+// MergeFilesWithSameExtension merges files that have the same extension into one.
+// Can also handle merging audio and video.
+func MergeFilesWithSameExtension(paths []string, mergedFilePath string) error {
 	cmds := []string{
 		"-y",
 	}
 	for _, path := range paths {
 		cmds = append(cmds, "-i", path)
 	}
-	cmds = append(
-		cmds, "-c:v", "copy", "-c:a", "aac", "-strict", "experimental",
-		mergedFilePath,
-	)
+	cmds = append(cmds, "-c:v", "copy", "-c:a", "copy", mergedFilePath)
 	return runMergeCmd(exec.Command("ffmpeg", cmds...), paths, "")
 }
 
-// MergeToMP4 merge video parts to MP4
+
+// MergeToMP4 merges video parts to an MP4 file.
 func MergeToMP4(paths []string, mergedFilePath string, filename string) error {
 	//mergeFilePath := filename + ".txt" // merge list file should be in the current directory
 	mergeFilePath := mergedFilePath +"_"+filename + ".txt"
 
-	//fmt.Printf("\n mergeFilePath %s.\n\n",mergeFilePath);
 	// write ffmpeg input file list
 	mergeFile, _ := os.Create(mergeFilePath)
 	for _, path := range paths {
-		mergeFile.Write([]byte(fmt.Sprintf("file '%s'\n", path)))
+		mergeFile.Write([]byte(fmt.Sprintf("file '%s'\n", path))) // nolint
 	}
-
-	//fmt.Printf("\v",paths)
-
-	mergeFile.Close()
+	mergeFile.Close() // nolint
 
 	cmd := exec.Command(
 		"ffmpeg", "-y", "-f", "concat", "-safe", "-1",
