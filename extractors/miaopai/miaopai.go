@@ -2,13 +2,13 @@ package miaopai
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand"
 	"strings"
 	"time"
 
-	"github.com/iawia002/annie/downloader"
-	"github.com/iawia002/annie/extractors"
+	"github.com/iawia002/annie/extractors/types"
 	"github.com/iawia002/annie/request"
 	"github.com/iawia002/annie/utils"
 )
@@ -35,51 +35,67 @@ func getRandomString(l int) string {
 	for i := 0; i < l; i++ {
 		s = append(s, chars[rand.Intn(len(chars)-1)])
 	}
-	return strings.Join(s, ",")
+	return strings.Join(s, "")
 }
 
-// Extract is the main function for extracting data
-func Extract(url string) ([]downloader.Data, error) {
+type extractor struct{}
+
+// New returns a youtube extractor.
+func New() types.Extractor {
+	return &extractor{}
+}
+
+// Extract is the main function to extract the data.
+func (e *extractor) Extract(url string, option types.Options) ([]*types.Data, error) {
 	ids := utils.MatchOneOf(url, `/media/([^\./]+)`, `/show(?:/channel)?/([^\./]+)`)
 	if ids == nil || len(ids) < 2 {
-		return nil, extractors.ErrURLParseFailed
+		return nil, types.ErrURLParseFailed
 	}
 	id := ids[1]
 
+	randomString := getRandomString(10)
+
 	var data miaopaiData
 	jsonString, err := request.Get(
-		fmt.Sprintf("https://n.miaopai.com/api/aj_media/info.json?smid=%s&appid=530&_cb=_jsonp%s", id, getRandomString(10)),
+		fmt.Sprintf("https://n.miaopai.com/api/aj_media/info.json?smid=%s&appid=530&_cb=_jsonp%s", id, randomString),
 		url, nil,
 	)
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal([]byte(jsonString), &data)
+
+	match := utils.MatchOneOf(jsonString, randomString+`\((.*)\);$`)
+	if match == nil || len(match) < 2 {
+		return nil, errors.New("获取视频信息失败。")
+	}
+
+	err = json.Unmarshal([]byte(match[1]), &data)
 	if err != nil {
 		return nil, err
 	}
+
 	realURL := data.Data.MetaData[0].URLs.M
 	size, err := request.Size(realURL, url)
 	if err != nil {
 		return nil, err
 	}
-	urlData := downloader.URL{
+	urlData := &types.Part{
 		URL:  realURL,
 		Size: size,
 		Ext:  "mp4",
 	}
-	streams := map[string]downloader.Stream{
+	streams := map[string]*types.Stream{
 		"default": {
-			URLs: []downloader.URL{urlData},
-			Size: size,
+			Parts: []*types.Part{urlData},
+			Size:  size,
 		},
 	}
 
-	return []downloader.Data{
+	return []*types.Data{
 		{
 			Site:    "秒拍 miaopai.com",
 			Title:   data.Data.Description,
-			Type:    "video",
+			Type:    types.DataTypeVideo,
 			Streams: streams,
 			URL:     url,
 		},

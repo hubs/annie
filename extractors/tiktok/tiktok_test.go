@@ -1,4 +1,4 @@
-package pixivision
+package tiktok
 
 import (
 	"testing"
@@ -15,8 +15,15 @@ func TestDownload(t *testing.T) {
 		{
 			name: "normal test",
 			args: test.Args{
-				URL:   "https://www.pixivision.net/zh/a/3271",
-				Title: "Don't ask me to choose! Tiny Breasts VS Huge Breasts",
+				URL:   "https://www.tiktok.com/@therock/video/6768158408110624005",
+				Title: "#bestfriend check.",
+			},
+		},
+		{
+			name: "short url test",
+			args: test.Args{
+				URL:   "https://vm.tiktok.com/C998PY/",
+				Title: "Who saw that coming? 🍁 #leaves #fall",
 			},
 		},
 	}

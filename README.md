@@ -64,7 +64,7 @@ The following dependencies are required and must be installed separately.
 To install Annie, use `go get`, or download the binary file from [Releases](https://github.com/iawia002/annie/releases) page.
 
 ```bash
-$ go get github.com/iawia002/annie
+$ GO111MODULE=on go get github.com/iawia002/annie
 ```
 
 ### Homebrew (macOS only)
@@ -225,6 +225,13 @@ You can use the `-start`, `-end` or `-items` option to specify the download rang
     	Playlist video items to download. Separated by commas like: 1,5,6,8-10
 ```
 
+For bilibili playlists only:
+
+```
+-eto
+  File name of each bilibili episode doesn't include the playlist title
+```
+
 ### Multiple inputs
 
 You can also download multiple URLs at once:
@@ -318,22 +325,16 @@ $ annie -c cookies.txt https://www.bilibili.com/video/av20203945
 ```
 
 ### Proxy
-#### HTTP proxy
 
-An HTTP proxy can be specified with the `-x` option:
-
-```console
-$ annie -x http://127.0.0.1:7777 -i https://www.youtube.com/watch?v=Gnbch2osEeo
-```
-
-#### SOCKS5 proxy
-
-A SOCKS5 proxy can be specified with the `-s` option:
+You can set the HTTP/SOCKS5 proxy using environment variables:
 
 ```console
-$ annie -s 127.0.0.1:1080 -i https://www.youtube.com/watch?v=Gnbch2osEeo
+$ HTTP_PROXY="http://127.0.0.1:1087/" annie -i https://www.youtube.com/watch?v=Gnbch2osEeo
 ```
 
+```console
+$ HTTP_PROXY="socks5://127.0.0.1:1080/" annie -i https://www.youtube.com/watch?v=Gnbch2osEeo
+```
 
 ### Multi-Thread
 
@@ -519,10 +520,6 @@ $ annie -j https://www.bilibili.com/video/av20203945
 #### Network:
 
 ```
-  -s string
-    	SOCKS5 proxy
-  -x string
-    	HTTP proxy
   -retry int
     	How many times to retry when the download failed (default 10)
 ```
@@ -562,13 +559,6 @@ $ annie -j https://www.bilibili.com/video/av20203945
     	Youku ckey (default "7B19C0AB12633B22E7FE81271162026020570708D6CC189E4924503C49D243A0DE6CD84A766832C2C99898FC5ED31F3709BB3CDD82C96492E721BDD381735026")
   -password string
     	Youku password
-```
-
-#### YouTube
-
-```
-  -ytb-stream2
-    	Use data in url_encoded_fmt_stream_map
 ```
 
 #### aria2:
@@ -615,6 +605,7 @@ Twitter | <https://twitter.com> | ✓ | | | |
 Pornhub | <https://pornhub.com> | ✓ | | | |
 XVIDEOS | <https://xvideos.com> | ✓ | | | |
 聯合新聞網 | <https://udn.com> | ✓ | | | |
+TikTok | <https://www.tiktok.com> | ✓ | | | |
 
 
 ## Known issues
